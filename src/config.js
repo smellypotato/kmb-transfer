@@ -1,3 +1,3 @@
-export const supabaseUrl = "https://vfvcmdjejjausqrhmihv.supabase.co";
+export const supabaseUrl = "https://cmwtcqqaddhvzqyitfzw.supabase.co";
 export const supabasePublishableKey =
-  "sb_publishable_-EfelmXqhMhyl1T2T-Sntw_vuXkgREp";
+  "sb_publishable_rpb26DxXn-lS8r6f33bwiw_SBnhb5wu";
