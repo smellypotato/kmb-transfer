@@ -59,14 +59,14 @@ body {
 
 .search-box {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.5fr;
+  grid-template-columns: 1fr 1fr auto;
   gap: 8px;
   align-items: start;
 }
 
 .search-box > .combo,
 .search-box > .secondary,
-.search-box > .search-button {
+.search-box > .search-actions {
   width: 100%;
   min-width: 0;
 }
@@ -92,6 +92,7 @@ input:focus {
 }
 
 .search-button,
+.share-button,
 .recent button,
 .combo button {
   font: inherit;
@@ -115,6 +116,31 @@ input:focus {
 .search-button:disabled {
   cursor: default;
   background: #e2a3ae;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.share-button {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid #b7c0ce;
+  border-radius: 6px;
+  background: #fff;
+  color: #1c2430;
+  white-space: nowrap;
+}
+
+.share-button:disabled {
+  cursor: default;
+  color: #8b95a5;
+  background: #f3f5f8;
 }
 
 .secondary {
@@ -177,6 +203,7 @@ input:focus {
 .chevron,
 .chip button svg,
 .search-button svg,
+.share-button svg,
 .recent span svg,
 .notes a svg {
   width: 1.05rem;
@@ -379,6 +406,149 @@ input:focus {
   margin-top: 16px;
 }
 
+.page-tools {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.install {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.install button {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid #c8102e;
+  border-radius: 6px;
+  background: #fff;
+  color: #c8102e;
+  font: inherit;
+  cursor: pointer;
+}
+
+.install p {
+  margin: 0;
+  color: #5c6778;
+  font-size: 0.9rem;
+}
+
+.install svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.changelog-button {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #b7c0ce;
+  border-radius: 6px;
+  background: #fff;
+  color: #1c2430;
+  font: inherit;
+  cursor: pointer;
+}
+
+.changelog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(28, 36, 48, 0.45);
+}
+
+.changelog-dialog {
+  width: min(560px, 100%);
+  max-height: min(80vh, 640px);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 20px;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.changelog-dialog:focus {
+  outline: none;
+}
+
+.changelog-dialog-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.changelog-dialog h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.changelog-dialog-bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #5c6778;
+  cursor: pointer;
+}
+
+.changelog-dialog-bar button:hover {
+  background: #eef3fb;
+}
+
+.changelog-dialog-bar svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.changelog-dialog-body {
+  overflow: auto;
+}
+
+.changelog-dialog h3 {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.changelog-dialog h3 span {
+  color: #5c6778;
+  font-weight: 500;
+}
+
+.changelog-dialog ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.changelog-dialog li + li {
+  margin-top: 4px;
+}
+
+.changelog-dialog article + article {
+  margin-top: 16px;
+}
+
 .notes a {
   display: inline-flex;
   align-items: center;
@@ -401,6 +571,15 @@ input:focus {
 
   .intro h1 {
     font-size: 1.15rem;
+  }
+
+  .search-box {
+    grid-template-columns: 1fr;
+  }
+
+  .search-actions .search-button,
+  .search-actions .share-button {
+    flex: 1;
   }
 
   .search-button {

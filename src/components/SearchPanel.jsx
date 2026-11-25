@@ -1,9 +1,41 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FiClock, FiSearch, FiX } from "react-icons/fi";
+import { FiClock, FiSearch, FiShare2, FiX } from "react-icons/fi";
+import { recentLabel } from "../lib/recentRoutes.js";
 import { normalizeToken, suggestRoutes } from "../lib/routes.js";
+import { urlMatchesSearch } from "../lib/searchQuery.js";
 import { RouteCombo } from "./RouteCombo.jsx";
 
 const SECONDARY_LIMIT = 20;
+
+async function copyUrl(url) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      const pending = navigator.clipboard.writeText(url);
+      pending.catch(() => {});
+      const timeout = new Promise((_, reject) => {
+        window.setTimeout(() => reject(new Error("timeout")), 1000);
+      });
+      await Promise.race([pending, timeout]);
+      return true;
+    } catch {
+      // The clipboard API can reject when the page is not allowed to write.
+    }
+  }
+  try {
+    const input = document.createElement("textarea");
+    input.value = url;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    document.body.appendChild(input);
+    input.select();
+    const copiedOk = document.execCommand("copy");
+    input.remove();
+    return copiedOk;
+  } catch {
+    return false;
+  }
+}
 
 export function SearchPanel({
   routes,
@@ -11,14 +43,16 @@ export function SearchPanel({
   routesError,
   query,
   onQueryChange,
+  secondary,
+  onSecondaryChange,
   searching,
   recent,
   onSearch,
 }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [secondary, setSecondary] = useState([]);
   const [secondaryQuery, setSecondaryQuery] = useState("");
+  const [copied, setCopied] = useState(false);
   const [secondaryOpen, setSecondaryOpen] = useState(false);
   const [secondaryActive, setSecondaryActive] = useState(0);
   const routeComboRef = useRef(null);
@@ -43,7 +77,7 @@ export function SearchPanel({
   );
 
   function addSecondary(tokens) {
-    setSecondary((current) => {
+    onSecondaryChange((current) => {
       const next = [...current];
       for (const token of tokens) {
         const route = normalizeToken(token);
@@ -68,6 +102,14 @@ export function SearchPanel({
     const filters = commitSecondary(secondaryRoutes);
     setOpen(false);
     onSearch(route, filters);
+  }
+
+  async function share() {
+    const url = window.location.href;
+    const copiedOk = await copyUrl(url);
+    if (!copiedOk) return;
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
   }
 
   function onChange(event) {
@@ -102,7 +144,7 @@ export function SearchPanel({
     else submit(query);
   }
 
-  function onSecondaryChange(event) {
+  function onSecondaryInput(event) {
     const raw = event.target.value.toUpperCase();
     if (raw.includes(",")) {
       const parts = raw.split(",");
@@ -134,7 +176,7 @@ export function SearchPanel({
       return;
     }
     if (event.key === "Backspace" && !secondaryQuery && secondary.length > 0) {
-      setSecondary((current) => current.slice(0, -1));
+      onSecondaryChange((current) => current.slice(0, -1));
       return;
     }
     if (event.key !== "Enter") return;
@@ -180,7 +222,7 @@ export function SearchPanel({
                 <button
                   type="button"
                   aria-label={`移除 ${route}`}
-                  onClick={() => setSecondary((current) => current.filter((item) => item !== route))}
+                  onClick={() => onSecondaryChange((current) => current.filter((item) => item !== route))}
                 >
                   <FiX aria-hidden="true" />
                 </button>
@@ -197,7 +239,7 @@ export function SearchPanel({
               open={secondaryOpen}
               suggestions={secondarySuggestions}
               activeIndex={secondaryActive}
-              onChange={onSecondaryChange}
+              onChange={onSecondaryInput}
               onFocus={() => setSecondaryOpen(true)}
               onKeyDown={onSecondaryKeyDown}
               onClose={() => setSecondaryOpen(false)}
@@ -209,15 +251,26 @@ export function SearchPanel({
             />
           </div>
         </div>
-        <button
-          type="button"
-          className="search-button"
-          disabled={!routes.length || searching}
-          onClick={() => submit(query)}
-        >
-          <FiSearch aria-hidden="true" />
-          搜尋
-        </button>
+        <div className="search-actions">
+          <button
+            type="button"
+            className="search-button"
+            disabled={!routes.length || searching}
+            onClick={() => submit(query)}
+          >
+            <FiSearch aria-hidden="true" />
+            搜尋
+          </button>
+          <button
+            type="button"
+            className="share-button"
+            disabled={!urlMatchesSearch(query, secondary)}
+            onClick={share}
+          >
+            <FiShare2 aria-hidden="true" />
+            {copied ? "已複製" : "分享"}
+          </button>
+        </div>
       </div>
       {routesError && <p className="status error">{routesError}</p>}
       {!routes.length && !routesError && <p className="status">正在載入路線…</p>}
@@ -227,16 +280,18 @@ export function SearchPanel({
             <FiClock aria-hidden="true" />
             最近搜尋
           </span>
-          {recent.map((route) => (
+          {recent.map((entry) => (
             <button
-              key={route}
+              key={`${entry.route}|${entry.secondary.join(",")}`}
               type="button"
               onClick={() => {
-                onQueryChange(route);
+                setSecondaryQuery("");
+                setSecondaryOpen(false);
                 setOpen(false);
+                onSearch(entry.route, entry.secondary);
               }}
             >
-              {route}
+              {recentLabel(entry)}
             </button>
           ))}
         </div>
